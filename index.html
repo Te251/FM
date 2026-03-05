@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOGOL News</title>
+    <style>
+        :root {
+            --google-blue: #4285F4;
+            --google-red: #EA4335;
+            --google-yellow: #FBBC05;
+            --google-green: #34A853;
+            --bg-gray: #f1f3f4;
+            --text-main: #202124;
+            --text-sub: #5f6368;
+            --border-color: #dadce0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            cursor: pointer;
+        }
+        .logo span:nth-child(1) { color: var(--google-blue); }
+        .logo span:nth-child(2) { color: var(--google-red); }
+        .logo span:nth-child(3) { color: var(--google-yellow); }
+        .logo span:nth-child(4) { color: var(--google-blue); }
+        .logo span:nth-child(5) { color: var(--google-green); }
+
+        .weather-bar {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* News Cards */
+        .news-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid transparent;
+        }
+        .news-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        .news-card.mandatory {
+            border-color: rgba(66, 133, 244, 0.3);
+            background: #f8faff;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #eee;
+            transition: transform 0.3s;
+        }
+
+        .card-content {
+            padding: 16px;
+        }
+
+        .category-tag {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--google-blue);
+            background: #e8f0fe;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        /* Article View */
+        #articleView {
+            display: none;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .article-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 110;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px 12px;
+            margin-right: 12px;
+            border-radius: 50%;
+        }
+        .back-btn:hover { background: #f1f3f4; }
+
+        .article-body {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+
+        .article-title {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 16px;
+        }
+
+        .article-meta {
+            font-size: 14px;
+            color: var(--text-sub);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .article-image {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .article-text {
+            font-size: 17px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            color: #333;
+        }
+
+        /* Reactions */
+        .reactions {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin: 40px 0;
+        }
+
+        .reaction-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .reaction-btn:hover { background: #f8f9fa; }
+        .reaction-btn.like:hover { border-color: var(--google-blue); color: var(--google-blue); }
+        .reaction-btn.dislike:hover { border-color: var(--google-red); color: var(--google-red); }
+
+        .reaction-icon { font-size: 20px; margin-bottom: 4px; }
+        .reaction-count { font-size: 14px; font-weight: bold; }
+
+        /* Comments */
+        .comments-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 30px;
+        }
+
+        .comments-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .comment-input-box {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            resize: none;
+            height: 80px;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .nickname-input {
+            width: 150px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+            display: block;
+        }
+
+        .comment-submit {
+            background: var(--google-blue);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            float: right;
+        }
+
+        .comment-list {
+            clear: both;
+            margin-top: 20px;
+        }
+
+        .comment-item {
+            border-bottom: 1px solid #f1f3f4;
+            padding: 16px 0;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .comment-author { font-weight: bold; }
+        .comment-date { color: var(--text-sub); }
+
+        .comment-content { font-size: 14px; margin-bottom: 10px; }
+
+        .comment-footer {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .comment-reaction { cursor: pointer; }
+        .comment-reaction:hover { color: var(--text-main); }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Report Modal */
+        .report-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        .report-content {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .report-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        .report-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .report-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .report-submit {
+            width: 100%;
+            background: var(--google-red);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .report-cancel {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .comment-reaction.active {
+            color: var(--google-blue);
+            font-weight: bold;
+        }
+        .comment-reaction.disliked {
+            color: var(--google-red);
+            font-weight: bold;
+        }
+
+        /* Settings Modal */
+        .settings-btn {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-sub);
+            z-index: 101;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-title { font-weight: bold; margin-bottom: 16px; font-size: 18px; }
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+        .btn-primary {
+            background: var(--google-blue);
+            color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+        }
+        .btn-secondary {
+            background: #eee; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="report-modal">
+        <div class="report-content">
+            <div class="report-title">사유 선택</div>
+            <div class="report-options">
+                <label class="report-option"><input type="radio" name="reportReason" value="영리목적/홍보성"> 영리목적/홍보성</label>
+                <label class="report-option"><input type="radio" name="reportReason" value="개인정보노출"> 개인정보노출</label>
+                <label class="report-option"><input type="radio" name="reportReason" value="음란성/선정성"> 음란성/선정성</label>
+                <label class="report-option"><input type="radio" name="reportReason" value="욕설/비하/혐오"> 욕설/비하/혐오</label>
+                <label class="report-option"><input type="radio" name="reportReason" value="도배/반복내용"> 도배/반복내용</label>
+                <label class="report-option"><input type="radio" name="reportReason" value="기타"> 기타</label>
+            </div>
+            <button class="report-submit" onclick="window.submitReport()">신고하기</button>
+            <button class="report-cancel" onclick="window.toggleReport(false)">취소</button>
+        </div>
+    </div>
+
+    <!-- Feed View -->
+    <div id="feedView">
+        <header>
+            <div class="logo" onclick="location.reload()">
+                <span>G</span><span>O</span><span>G</span><span>O</span><span>L</span>
+            </div>
+            <div id="weatherInfo" class="weather-bar">서울 날씨 정보를 불러오는 중...</div>
+        </header>
+        <div class="container" id="newsContainer">
+            <!-- News items will be injected here -->
+        </div>
+        <div id="loader" class="loading-spinner">더 많은 뉴스를 불러오는 중...</div>
+    </div>
+
+    <!-- Article View -->
+    <div id="articleView">
+        <div class="article-header">
+            <button class="back-btn" onclick="closeArticle()">←</button>
+            <div style="font-weight: bold;">뉴스 상세보기</div>
+        </div>
+        <div class="article-body" id="articleContent">
+            <!-- Article content will be injected here -->
+        </div>
+    </div>
+
+    <script type="module">
+        import { GoogleGenAI } from "https://esm.run/@google/genai";
+
+        // --- State ---
+        let currentArticleData = null;
+        let isLoading = false;
+        let ai = null;
+        
+        function initAI() {
+            let apiKey = "";
+            try {
+                apiKey = process.env.GEMINI_API_KEY;
+            } catch (e) {}
+
+            if (!apiKey || apiKey === "process.env.GEMINI_API_KEY") {
+                apiKey = localStorage.getItem('GEMINI_API_KEY') || "";
+            }
+
+            if (apiKey) {
+                ai = new GoogleGenAI({ apiKey });
+            } else {
+                ai = null;
+            }
+        }
+        
+        initAI();
+
+        const mandatoryNews = [
+            {
+                id: 'manwol-1',
+                title: "괴도만월 또다시 범행예고",
+                category: "사회",
+                image: "https://raw.githubusercontent.com/Te251/FM/refs/heads/main/man.png",
+                articleImage: "https://raw.githubusercontent.com/Te251/FM/refs/heads/main/no1.png",
+                author: "이정훈 기자",
+                date: "2026.02.24 09:12",
+                fullTitle: '"달빛 아래 사라진 노인들의 눈물"... 괴도 만월, 세 번째 범행 예고에 경찰 비상',
+                content: `【2026.02.24】 최근 대한민국을 떠들썩하게 만들고 있는 정체불명의 인물, '괴도 만월'이 세 번째 범행을 예고하며 세간의 화제가 되고 있습니다.
+
+이번 예고장은 온라인 커뮤니티와 주요 언론사 메일함을 통해 전달되었습니다. 예고장의 내용은 충격적입니다. 최근 수많은 어르신의 노후 자금을 가로채 사회적 공분을 샀던 대규모 '실버 타운 분양 사기 사건'의 주동자, 김 모 씨의 비밀 금고를 정면으로 겨냥했기 때문입니다. 만월은 예고장에서 "어르신들의 주름진 손에서 빼앗은 눈물을 다시 되돌려 주겠다"며, 부정한 방법으로 모인 현금 전액을 환수하겠다는 의지를 분명히 밝혔습니다.
+
+이미 두 차례의 범행을 통해 고가의 장물만을 골라 훔치면서도 인명 피해를 전혀 남기지 않았던 '괴도 만월'의 행보에 시민들은 묘한 기대감과 우려를 동시에 보내고 있습니다. SNS상에서는 그를 '현대판 홍길동'이라 부르는 지지층까지 생겨나며 여론은 연일 뜨겁게 달아오르고 있습니다.
+
+반면, 수사 당국은 당혹감을 감추지 못하고 있습니다. 경찰 관계자에 따르면, 이전 두 사건 모두 지문이나 DNA는 물론 CCTV에서도 그 어떠한 침입 흔적조차 발견되지 않아 "수사가 사실상 난항을 겪고 있다"고 전해졌습니다. 전문가들은 만월이 최첨단 보안 시스템을 무력화하는 고도의 기술을 가졌거나, 상상하기 힘든 트릭을 사용하고 있을 가능성을 제기하고 있습니다.
+
+경찰은 이번 세 번째 예고를 엄중히 받아들여 사기범 김 씨의 은신처 주변에 삼엄한 경비를 배치했으나, '만월의 예고는 반드시 실현된다'는 세간의 인식을 뒤집을 수 있을지 귀추가 주목됩니다.`,
+                likes: 25401,
+                dislikes: 12,
+                comments: [
+                    { id: 'c1-1', author: '정의구현맨', content: '괴도 저 ㄴ은 관종이 분명하다. 잡히면 갑자기 인플루언서로 떠서 공구할 듯', date: '방금 전', likes: 12, dislikes: 45 },
+                    { id: 'c1-2', author: '달빛사냥꾼', content: '와 진짜 홍길동이네 ㅋㅋ 응원합니다. 사기꾼들 다 털어버려라!!', date: '10분 전', likes: 450, dislikes: 12 },
+                    { id: 'c1-3', author: '법치광이', content: '그래도 범죄는 범죄지... 경찰 뭐하냐? 좀도둑하나 못잡고. 공권력이 우습나?', date: '25분 전', likes: 88, dislikes: 320 },
+                    { id: 'c1-4', author: '만월바라기', content: '만월님 이번에도 무사히 성공하시길! 정의구현 가즈아!', date: '40분 전', likes: 210, dislikes: 5 },
+                    { id: 'c1-5', author: '클린인터넷', content: '집에서 하루 1시간 투자로 월 500 벌기! 궁금하면 클릭 -> http://bit.ly/fake-money', date: '1시간 전', likes: 0, dislikes: 150 }
+                ]
+            },
+            {
+                id: 'manwol-2',
+                title: "[단독] '괴도 만월' 실제 얼굴 포착...알고보니",
+                category: "연예/이슈",
+                image: "https://raw.githubusercontent.com/Te251/FM/refs/heads/main/moza.png",
+                articleImage: "https://raw.githubusercontent.com/Te251/FM/refs/heads/main/fmb.png",
+                author: "김미나 기자",
+                date: "2026.02.24 14:05",
+                fullTitle: "[단독] 드디어 드러난 '괴도 만월' 충격적인 실체... CCTV에 포착된 그 얼굴?",
+                content: `【연예/이슈】 전국을 뒤흔들고 있는 신출귀몰한 의적, '괴도 만월'의 실제 얼굴이 드디어 공개될 것으로 보여 누리꾼들의 이목이 쏠리고 있습니다.
+
+최근 각종 온라인 커뮤니티와 SNS에는 '괴도 만월 검거 직전 포착된 민낯'이라는 제목의 영상과 사진이 빠르게 유포되었습니다. 지난 세 번째 범행 현장 인근에서 한 시민이 촬영했다는 이 게시물은 순식간에 수십만 회의 조회수를 기록하며 서버가 마비되는 소동까지 벌어졌습니다.
+
+하지만 본지 취재 결과, 해당 사진은 정체불명의 인물이 만월의 망토와 가면을 흉내 낸 이른바 '코스프레'인 것으로 밝혀졌습니다. 결국, 이번에도 세간이 갈구하던 그녀의 진짜 얼굴은 철저히 베일 속에 가려지게 되었습니다.
+
+기사를 접한 네티즌들은 "클릭하자마자 낚인 걸 알았다", "오히려 정체가 안 밝혀져서 더 로망이 있다", "얼굴이 정말 공개된다면 역대급 사건일 듯"이라며 아쉬움 섞인 반응을 보이고 있습니다. 경찰조차 꼬리를 잡지 못한 만월의 '가면 뒤 진실'은 당분간 시민들의 상상 속에만 존재할 것으로 보입니다.`,
+                likes: 42,
+                dislikes: 19850,
+                comments: [
+                    { id: 'c2-1', author: '낚시금지', content: '아 낚였네 ㅅㅂㅡㅡ 기레기 수준 보소. 제목 어그로 실화냐?', date: '5분 전', likes: 560, dislikes: 10 },
+                    { id: 'c2-2', author: '코스어', content: '코스프레였냐? ㅋㅋㅋㅋㅋ 근데 퀄리티는 좋더라.', date: '15분 전', likes: 45, dislikes: 2 },
+                    { id: 'c2-3', author: '궁금해', content: '근데 진짜 얼굴 궁금하긴 하다. 엄청 예쁠 것 같은데 도대체 누굴까', date: '30분 전', likes: 120, dislikes: 80 },
+                    { id: 'c2-4', author: '악플러', content: '도둑ㄴ 얼굴 봐서 뭐함? 그냥 빨리 잡혀라 ㅉㅉ 왜못잡냐', date: '1시간 전', likes: 12, dislikes: 240 }
+                ]
+            }
+        ];
+
+        const genericNewsPool = [
+            { title: "봄맞이 대청소 꿀팁, 미세먼지 걱정 끝", category: "생활/날씨", keyword: "cleaning" },
+            { title: "전국 벚꽃 개화 시기 앞당겨져... 축제 비상", category: "생활/날씨", keyword: "cherryblossom" },
+            { title: "환절기 면역력 강화하는 제철 음식 3가지", category: "생활/날씨", keyword: "healthyfood" },
+            { title: "신형 스마트폰 공개, 혁신인가 우려인가", category: "IT/과학", keyword: "smartphone" },
+            { title: "국내 여행지 베스트 5, 이번 주말엔 여기로", category: "여행", keyword: "travel" },
+            { title: "금리 인하 가능성 시사... 시장 반응은?", category: "경제", keyword: "money" },
+            { title: "K-푸드 열풍, 이제는 남미까지 점령", category: "국제", keyword: "food" },
+            { title: "톱스타 A모씨, 일반인과 열애설... 소속사 '확인 중'", category: "연예", keyword: "couple" },
+            { title: "아이돌 그룹 B, 빌보드 차트 역주행 기적", category: "연예", keyword: "concert" },
+            { title: "드라마 'C' 주연 배우 교체 논란... 제작진 입장 발표", category: "연예", keyword: "drama" }
+        ];
+
+        function generateStaticContent(item) {
+            const title = item.title;
+            const category = item.category;
+            
+            const keywordComments = [
+                { keywords: ["폭염", "더위", "여름", "기온"], comments: ["진짜 이번 여름 너무 덥네요...", "에어컨 없이 못 살 것 같아요.", "다들 온열질환 조심하세요!", "지구가 정말 아픈가 봐요."] },
+                { keywords: ["봄", "벚꽃", "개화", "나들이"], comments: ["드디어 봄이 왔네요! 벚꽃 보러 가고 싶어요.", "이번 주말에 나들이 계획 세워야겠어요.", "꽃가루 알레르기 있는 분들은 조심하세요.", "봄바람 쐬니까 기분 전환되고 좋네요."] },
+                { keywords: ["미세먼지", "황사", "공기", "마스크"], comments: ["미세먼지 때문에 목이 칼칼하네요.", "마스크 다시 꺼내 써야겠어요.", "공기청정기 풀가동 중입니다.", "맑은 하늘 본 게 언제인지... 속상하네요."] },
+                { keywords: ["스마트폰", "갤럭시", "아이폰", "출시", "공개"], comments: ["디자인은 예쁜데 가격이 문제네요.", "성능 차이가 얼마나 날지 궁금합니다.", "지금 쓰는 거 약정 끝나면 갈아타야겠어요.", "혁신은 이제 끝난 건가... 아쉽네요."] },
+                { keywords: ["금리", "주식", "경제", "물가"], comments: ["내 월급 빼고 다 오르는 세상...", "영끌족들 정말 힘들겠어요.", "언제쯤 경기가 풀릴까요?", "투자는 역시 신중해야 합니다."] },
+                { keywords: ["열애", "결혼", "결별", "커플"], comments: ["헐 대박... 진짜 의외의 조합이네요!", "두 분 너무 잘 어울려요. 행복하세요.", "연예인 걱정은 하는 게 아니라더니...", "사생활인데 좀 내버려 뒀으면 좋겠어요."] },
+                { keywords: ["아이돌", "차트", "컴백", "역주행", "빌보드"], comments: ["노래 너무 좋더라고요! 무한 반복 중.", "역시 K-POP의 위상 대단합니다.", "실력 있는 그룹이라 잘 될 줄 알았어요.", "팬으로서 너무 뿌듯하네요. 화이팅!"] },
+                { keywords: ["드라마", "배우", "캐스팅", "교체", "논란"], comments: ["이 배우 연기 진짜 잘하는데 기대되네요.", "원작이랑 싱크로율이 좀 아쉬운 듯?", "제작진들 고생이 많겠어요. 잘 해결되길.", "본방사수 해야겠네요. 재밌을 것 같아요."] },
+                { keywords: ["여행", "관광", "명소", "추천"], comments: ["여기 진짜 인생샷 명소예요!", "가족들이랑 가기 딱 좋을 것 같네요.", "예약하기 힘들다던데 미리 알아봐야겠어요.", "사진 보니까 당장 짐 싸고 싶네요."] }
+            ];
+
+            const categoryTemplates = {
+                "생활/날씨": [
+                    "내일 우산 챙겨야겠네요. 정보 감사합니다.",
+                    "요즘 날씨가 너무 변덕스러워요. 다들 감기 조심하세요.",
+                    "미세먼지 정보도 같이 있으면 좋을 것 같아요.",
+                    "주말에 나들이 가려고 했는데 참고해야겠네요.",
+                    "계절 바뀌는 게 몸으로 느껴지네요."
+                ],
+                "IT/과학": [
+                    "와, 기술의 발전이 정말 놀랍네요.",
+                    "이거 상용화되면 세상이 많이 바뀔 것 같아요.",
+                    "가격이 관건이겠네요. 사고 싶다...",
+                    "우리나라 기술력 대단합니다. 응원해요!",
+                    "보안 문제만 잘 해결되면 좋겠네요."
+                ],
+                "여행": [
+                    "여기 가봤는데 진짜 좋더라고요. 추천합니다!",
+                    "사진만 봐도 힐링되네요. 당장 떠나고 싶어요.",
+                    "비용은 어느 정도 들까요? 정보 좀 부탁드려요.",
+                    "숨은 명소였는데 이제 사람 많아지겠네요 ㅠㅠ",
+                    "여행 계획 짜는 것만으로도 행복하네요."
+                ],
+                "경제": [
+                    "내 월급만 안 오르는 현실... 슬프네요.",
+                    "금리가 빨리 안정되어야 할 텐데 걱정입니다.",
+                    "주식 시장에 어떤 영향을 줄지 궁금하네요.",
+                    "재테크 공부 더 열심히 해야겠어요.",
+                    "서민 경제가 좀 살아났으면 좋겠습니다."
+                ],
+                "국제": [
+                    "지구촌 소식 발 빠르게 전해주셔서 감사합니다.",
+                    "남의 일 같지 않네요. 잘 해결되길 바랍니다.",
+                    "해외 반응이 궁금하네요. 번역 기사도 부탁드려요.",
+                    "세계 정세가 참 복잡하게 돌아가네요.",
+                    "우리나라에 미칠 영향도 분석해주면 좋겠어요."
+                ],
+                "연예": [
+                    "헐 대박... 진짜인가요? 충격이네요.",
+                    "아 내가 좋아하는 배우인데.",
+                    "역시 연예계는 알다가도 모르겠네요.",
+                    "악플은 자제합시다. 상처받을 텐데...",
+                    "항상 응원하는 팬입니다. 힘내세요!"
+                ],
+                "기타": [
+                    "좋은 기사 잘 읽었습니다.",
+                    "유익한 정보네요. 공유합니다!",
+                    "앞으로의 소식도 기대할게요.",
+                    "생각해볼 점이 많은 기사네요.",
+                    "기자님 고생 많으셨습니다."
+                ]
+            };
+
+            // 1. Find keyword-based comments first
+            let pool = [];
+            for (const entry of keywordComments) {
+                if (entry.keywords.some(kw => title.includes(kw))) {
+                    pool = pool.concat(entry.comments);
+                }
+            }
+
+            // 2. Add category-based comments to the pool
+            const catPool = categoryTemplates[category] || categoryTemplates["기타"];
+            pool = pool.concat(catPool);
+
+            // 3. Shuffle and pick 3 unique comments
+            const shuffledPool = [...new Set(pool)].sort(() => 0.5 - Math.random());
+            
+            const staticComments = shuffledPool.slice(0, 3).map((content, idx) => ({
+                id: `sc${idx}-${item.id}`,
+                author: getRandomNickname(),
+                content: content,
+                date: `${idx * 3 + 2}분 전`,
+                likes: Math.floor(Math.random() * 50),
+                dislikes: Math.floor(Math.random() * 5)
+            }));
+
+            const body = `【GOGOL 뉴스】 ${item.date} - 최근 '${title}' 소식이 전해지며 많은 이들의 관심을 모으고 있습니다. 
+            
+            이번 ${category} 분야의 이슈는 사회적으로도 큰 파장을 일으키고 있으며, 전문가들은 이번 사안이 향후 관련 업계에 미칠 영향에 대해 예의주시하고 있습니다. 현장 관계자에 따르면 "현재 상황을 면밀히 분석 중이며, 조만간 공식 입장을 정리해 발표할 예정"이라고 전했습니다.
+            
+            누리꾼들은 이번 소식에 대해 다양한 반응을 보이며 온라인상에서 뜨거운 토론을 이어가고 있습니다. 보다 자세한 후속 보도는 GOGOL 뉴스를 통해 지속적으로 전달해 드릴 예정입니다.`;
+
+            return { body, comments: staticComments };
+        }
+
+        // --- Logic ---
+        const weatherData = {
+            icons: ["☀", "🌤", "☁", "🌧", "❄", "🌫"],
+            states: ["🌿 좋음", "😐 보통", "😷 나쁨"],
+            temp: Math.floor(Math.random() * 15) - 5,
+            icon: "",
+            air: ""
+        };
+        weatherData.icon = weatherData.icons[Math.floor(Math.random() * weatherData.icons.length)];
+        weatherData.air = weatherData.states[Math.floor(Math.random() * weatherData.states.length)];
+
+        function updateWeather() {
+            const now = new Date().toLocaleTimeString();
+            const weatherEl = document.getElementById("weatherInfo");
+            if (weatherEl) {
+                weatherEl.innerText = `서울 ${weatherData.icon} ${weatherData.temp}°C ${weatherData.air} | ${now}`;
+            }
+        }
+
+        function createNewsCard(item, isMandatory = false) {
+            const card = document.createElement("div");
+            card.className = `news-card fade-in ${isMandatory ? 'mandatory' : ''}`;
+            card.onclick = () => openArticle(item);
+            
+            if (!item.image) {
+                item.image = `https://loremflickr.com/800/450/${encodeURIComponent(item.keyword || 'news')}?lock=${Math.floor(Math.random() * 1000000)}`;
+            }
+            const imgUrl = item.image;
+            
+            card.innerHTML = `
+                <img class="thumbnail" id="thumb-${item.id}" src="${imgUrl}" alt="news" referrerPolicy="no-referrer">
+                <div class="card-content">
+                    <span class="category-tag">${item.category}</span>
+                    <h2 class="card-title">${item.title}</h2>
+                </div>
+            `;
+            return card;
+        }
+
+        async function loadMoreNews() {
+            if (isLoading) return;
+            isLoading = true;
+            document.getElementById("loader").style.display = "block";
+
+            if (!ai) {
+                // Fallback if no AI
+                setTimeout(() => {
+                    const container = document.getElementById("newsContainer");
+                    const fallback = [...genericNewsPool];
+                    // Pick 3 random
+                    const shuffled = fallback.sort(() => 0.5 - Math.random());
+                    shuffled.slice(0, 3).forEach(item => {
+                        container.appendChild(createNewsCard({
+                            ...item,
+                            id: 'fallback-' + Math.random(),
+                            author: "GOGOL 뉴스팀",
+                            date: new Date().toLocaleString(),
+                            likes: Math.floor(Math.random() * 100), 
+                            dislikes: Math.floor(Math.random() * 20), 
+                            comments: []
+                        }));
+                    });
+                    isLoading = false;
+                    document.getElementById("loader").style.display = "none";
+                }, 1000);
+                return;
+            }
+
+            try {
+                const response = await ai.models.generateContent({
+                    model: "gemini-3-flash-preview",
+                    contents: `Today is March 5th, 2026. Generate 3 unique, catchy Korean news headlines for a portal site. 
+                    Include a mix of topics:
+                    1. Economy (경제): Stock market, real estate, or inflation.
+                    2. Gossip/Entertainment (연예/이슈): Celebrity news, viral trends, or social issues.
+                    3. Life/Seasonal (생활/문화): Spring-related topics, health, or travel.
+                    
+                    For each headline, provide:
+                    - title: The headline
+                    - category: News category (e.g., 경제, 연예/이슈, 생활/문화, IT/과학, 스포츠)
+                    - keyword: A single English word that best represents the visual theme of the news for an image search (e.g., 'money', 'celebrity', 'spring', 'tech').
+                    Return as JSON array: [{title: string, category: string, keyword: string}]`,
+                    config: { responseMimeType: "application/json" }
+                });
+
+                const data = JSON.parse(response.text || "[]");
+                const container = document.getElementById("newsContainer");
+
+                data.forEach(item => {
+                    const id = 'gen-' + Math.random().toString(36).substr(2, 9);
+                    container.appendChild(createNewsCard({
+                        ...item,
+                        id: id,
+                        author: "GOGOL 뉴스팀",
+                        date: new Date().toLocaleString(),
+                        fullTitle: item.title,
+                        content: null,
+                        likes: Math.floor(Math.random() * 200),
+                        dislikes: Math.floor(Math.random() * 50),
+                        comments: [
+                            { author: '독자', content: '흥미로운 기사네요.', date: '방금 전', likes: 5, dislikes: 0 }
+                        ]
+                    }));
+                });
+            } catch (error) {
+                console.error("Failed to load more news:", error);
+            } finally {
+                isLoading = false;
+                document.getElementById("loader").style.display = "none";
+            }
+        }
+
+        async function openArticle(item) {
+            currentArticleData = item;
+            document.getElementById("feedView").style.display = "none";
+            document.getElementById("articleView").style.display = "block";
+            window.scrollTo(0, 0);
+
+            // Generate content and comments if missing
+            if (!item.content) {
+                const generated = generateStaticContent(item);
+                item.content = generated.body;
+                if (!item.comments || item.comments.length <= 1) {
+                    item.comments = generated.comments;
+                }
+            }
+
+            renderArticleContent(item);
+        }
+
+        function renderArticleContent(item) {
+            const content = document.getElementById("articleContent");
+            content.innerHTML = `
+                <h1 class="article-title">${item.fullTitle || item.title}</h1>
+                <div class="article-meta">
+                    <strong>${item.author || '기자'}</strong> | 입력 ${item.date || '2026.02.24'}
+                </div>
+                <img class="article-image" src="${item.articleImage || item.image}" alt="article image" referrerPolicy="no-referrer">
+                <div class="article-text">${item.content || '기사 내용을 불러오는 중...'}</div>
+
+                <div class="reactions" id="reactionBox">
+                    ${renderReactions(item)}
+                </div>
+
+                <div class="comments-section">
+                    <div class="comments-title">댓글 <span id="commentCount">${item.comments ? item.comments.length : 0}</span></div>
+                    <div class="comment-input-box">
+                        <input type="text" id="nicknameInput" class="nickname-input" placeholder="닉네임 (선택)" maxlength="10">
+                        <textarea id="commentInput" class="comment-textarea" placeholder="댓글을 입력해주세요. 타인에 대한 비방이나 욕설은 제재 대상이 될 수 있습니다."></textarea>
+                        <button class="comment-submit" onclick="window.postComment()">등록</button>
+                    </div>
+                    <div class="comment-list" id="commentList">
+                        ${renderComments(item.comments || [])}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderReactions(item) {
+            return `
+                <button class="reaction-btn like" onclick="window.handleReaction('like')">
+                    <span class="reaction-icon">👍</span>
+                    <span class="reaction-count">${item.likes.toLocaleString()}</span>
+                </button>
+                <button class="reaction-btn dislike" onclick="window.handleReaction('dislike')">
+                    <span class="reaction-icon">👎</span>
+                    <span class="reaction-count">${item.dislikes.toLocaleString()}</span>
+                </button>
+            `;
+        }
+
+        const nicknames = ["뉴스매니아", "팩트체크", "세상만사", "정의구현", "독자1", "시민기자", "오늘의뉴스", "댓글러", "비판적시각", "공감백배"];
+        function getRandomNickname() {
+            return nicknames[Math.floor(Math.random() * nicknames.length)] + Math.floor(Math.random() * 999);
+        }
+
+        const userReactions = JSON.parse(localStorage.getItem('userReactions') || '{}');
+
+        function renderComments(comments) {
+            return comments.map(c => {
+                const reactionKey = `comment-${c.id}`;
+                const userReaction = userReactions[reactionKey];
+                
+                return `
+                    <div class="comment-item fade-in">
+                        <div class="comment-header">
+                            <span class="comment-author">${c.author}</span>
+                            <span class="comment-date">${c.date}</span>
+                        </div>
+                        <div class="comment-content">${c.content}</div>
+                        <div class="comment-footer">
+                            <span class="comment-reaction ${userReaction === 'like' ? 'active' : ''}" onclick="window.handleCommentReaction('${c.id}', 'like')">추천 ${c.likes}</span>
+                            <span class="comment-reaction ${userReaction === 'dislike' ? 'disliked' : ''}" onclick="window.handleCommentReaction('${c.id}', 'dislike')">비추천 ${c.dislikes}</span>
+                            <span class="comment-reaction" style="margin-left:auto" onclick="window.toggleReport(true, '${c.id}')">신고</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- Global Handlers for HTML onclick ---
+        window.handleCommentReaction = (commentId, type) => {
+            const reactionKey = `comment-${commentId}`;
+            if (userReactions[reactionKey]) {
+                alert("이미 참여하셨습니다.");
+                return;
+            }
+
+            const comment = currentArticleData.comments.find(c => c.id === commentId);
+            if (!comment) return;
+
+            if (type === 'like') comment.likes++;
+            else comment.dislikes++;
+
+            userReactions[reactionKey] = type;
+            localStorage.setItem('userReactions', JSON.stringify(userReactions));
+
+            document.getElementById("commentList").innerHTML = renderComments(currentArticleData.comments);
+        };
+
+        let reportingCommentId = null;
+        window.toggleReport = (show, commentId = null) => {
+            reportingCommentId = commentId;
+            document.getElementById("reportModal").style.display = show ? 'flex' : 'none';
+            if (!show) {
+                const radios = document.getElementsByName("reportReason");
+                radios.forEach(r => r.checked = false);
+            }
+        };
+
+        window.submitReport = () => {
+            const selected = document.querySelector('input[name="reportReason"]:checked');
+            if (!selected) {
+                alert("신고 사유를 선택해주세요.");
+                return;
+            }
+            alert(`신고가 접수되었습니다.\n사유: ${selected.value}`);
+            window.toggleReport(false);
+        };
+
+        window.handleReaction = (type) => {
+            if (!currentArticleData) return;
+            
+            const reactionKey = `article-${currentArticleData.id}`;
+            if (userReactions[reactionKey]) {
+                alert("이미 참여하셨습니다.");
+                return;
+            }
+
+            if (type === 'like') currentArticleData.likes++;
+            else currentArticleData.dislikes++;
+            
+            userReactions[reactionKey] = type;
+            localStorage.setItem('userReactions', JSON.stringify(userReactions));
+            
+            document.getElementById("reactionBox").innerHTML = renderReactions(currentArticleData);
+        };
+
+        window.postComment = () => {
+            const input = document.getElementById("commentInput");
+            const nicknameInput = document.getElementById("nicknameInput");
+            if (!input || !input.value.trim() || !currentArticleData) return;
+            
+            const author = (nicknameInput && nicknameInput.value.trim()) || getRandomNickname();
+            
+            const newComment = {
+                id: 'user-' + Date.now(),
+                author: author,
+                content: input.value.trim(),
+                date: '방금 전',
+                likes: 0,
+                dislikes: 0
+            };
+            
+            currentArticleData.comments.unshift(newComment);
+            input.value = "";
+            if (nicknameInput) nicknameInput.value = "";
+            
+            document.getElementById("commentList").innerHTML = renderComments(currentArticleData.comments);
+            document.getElementById("commentCount").innerText = currentArticleData.comments.length;
+        };
+
+        window.closeArticle = () => {
+            document.getElementById("articleView").style.display = "none";
+            document.getElementById("feedView").style.display = "block";
+            currentArticleData = null;
+        };
+
+        // --- Init ---
+        window.addEventListener("scroll", () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+                loadMoreNews();
+            }
+        });
+
+        // Initial Load
+        const container = document.getElementById("newsContainer");
+        mandatoryNews.forEach(item => {
+            container.appendChild(createNewsCard(item, true));
+        });
+        loadMoreNews();
+
+        updateWeather();
+        setInterval(updateWeather, 1000);
+
+    </script>
+</body>
+</html>
